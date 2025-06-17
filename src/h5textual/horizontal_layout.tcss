@@ -1,0 +1,18 @@
+#attr_viewer {
+    height: 1fr;
+    overflow: auto;
+    border: round #666666;
+    padding: 1 2;
+}
+
+#data_viewer {
+    height: 1fr;
+    overflow: auto;
+    border: round #999966;
+    padding: 1 2;
+}
+
+#hdf_tree {
+    width: 1fr;
+    overflow: auto;
+}

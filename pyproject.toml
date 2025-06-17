@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "h5textual"
+dynamic = ["version"]
+description = 'a command line inspection tool to look at hdf files'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Urs Hofmann", email = "mail@hofmannu.org" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = ["textual>=3.3.0","h5py>=3.14.0"]
+
+[project.urls]
+Documentation = "https://github.com/hofmannu/h5textual#readme"
+Issues = "https://github.com/hofmannu/h5textual/issues"
+Source = "https://github.com/hofmannu/h5textual"
+
+[project.scripts]
+h5textual = "h5textual.entry_point:hdf_app"
+
+[tool.hatch.version]
+path = "src/h5textual/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/h5textual tests}"
+
+[tool.coverage.run]
+source_pkgs = ["h5textual", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/h5textual/__about__.py",
+]
+
+[tool.coverage.paths]
+h5textual = ["src/h5textual", "*/h5textual/src/h5textual"]
+tests = ["tests", "*/h5textual/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
