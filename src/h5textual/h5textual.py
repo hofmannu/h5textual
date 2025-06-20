@@ -34,11 +34,16 @@ logging.basicConfig(
 
 class HDFTree(Tree[str]):
     def __init__(self, file: h5py.File):
-        super().__init__("HDF5 File Tree")
+        super().__init__("(root)", data="/")
         self.file = file
+
+        self.info_panel = Markdown(id="attr_viewer") # displays size, type, and attributes
+        self.data_viewer = Markdown(id="data_viewer") # displays numbers / content
+
         self.build_tree(self.root, self.file)
 
     def build_tree(self, node, h5node):
+
         for key in h5node:
             item = h5node[key]
 
@@ -89,7 +94,11 @@ class HDFTree(Tree[str]):
             if typeStr in allowed:
                 return f"| {key} | {typeStr}  | {value} |\n"
             if typeStr == "ndarray":
-                return f"| {key} | array{value.shape} | `{value}` |\n"
+                try:
+                    arr_str = np.array2string(value, separator=", ", max_line_width=80).replace("\n", "")
+                    return f"| {key} | array{value.shape} | `{arr_str}` |\n"
+                except Exception:
+                    return f"| {key} | array | <error formatting> |\n"
             else:
                 return f"| {key} | {typeStr} | no display | \n"
 
@@ -134,12 +143,13 @@ class HDFApp(App[None]):
 
     def compose(self) -> ComposeResult:
         self.h5file = h5py.File(self.filePath, "r")
-        self.hdfTree = HDFTree(self.h5file)        
+
+        self.hdfTree = HDFTree(self.h5file)
         with Horizontal():
             yield self.hdfTree
             with Vertical():
-                yield Markdown(id="attr_viewer")
-                yield Markdown(id="data_viewer")
+                yield self.hdfTree.info_panel
+                yield self.hdfTree.data_viewer
         yield Footer()
         yield Header()
 
@@ -147,7 +157,7 @@ class HDFApp(App[None]):
         try:
             ds = self.h5file[path]
             if not isinstance(ds, h5py.Dataset):
-                self.data_viewer.update("_Not a dataset_")
+                self.hdfTree.info_panel.update("_Not a dataset_")
                 return
 
             data = ds[()]
@@ -159,8 +169,6 @@ class HDFApp(App[None]):
             preview += " - mean: {} \n".format(data.mean())
             preview += "## Data\n"
             preview += f"{data}"
-
-            
 
         except Exception as e:
             preview = f"⚠️ _Error reading dataset_: `{e}`"
@@ -187,9 +195,6 @@ class HDFApp(App[None]):
 
         self.title = "h5textual"
         self.sub_title = info_text
-
-        self.hdfTree.info_panel = self.query_one("#attr_viewer", Markdown)
-        self.hdfTree.data_viewer = self.query_one("#data_viewer", Markdown)
 
     def on_shutdown(self):
         if self.h5file:
